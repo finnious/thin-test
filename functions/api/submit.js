@@ -18,13 +18,16 @@ export async function onRequestPost(context) {
             );
         }
 
-        const ghlResponse = await fetch('https://rest.gohighlevel.com/v1/contacts/', {
+        // GHL v2 API endpoint with Private Integration
+        const ghlResponse = await fetch('https://services.leadconnectorhq.com/contacts/', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${env.GHL_API_KEY}`,
                 'Content-Type': 'application/json',
+                'Version': '2021-07-28'
             },
             body: JSON.stringify({
+                locationId: env.GHL_LOCATION_ID,
                 firstName: data.first_name,
                 email: data.email,
                 tags: ['Test-Form'],
@@ -36,7 +39,7 @@ export async function onRequestPost(context) {
             const error = await ghlResponse.text();
             console.error('GHL Error:', error);
             return new Response(
-                JSON.stringify({ success: false, error: 'GHL API error: ' + ghlResponse.status }),
+                JSON.stringify({ success: false, error: 'GHL API error: ' + ghlResponse.status, details: error }),
                 { status: 500, headers: corsHeaders }
             );
         }
