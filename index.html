@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Test</title>
+    <style>
+        body { font-family: sans-serif; max-width: 400px; margin: 50px auto; padding: 20px; }
+        input, button { display: block; width: 100%; margin: 10px 0; padding: 10px; box-sizing: border-box; }
+        button { background: #00ABC7; color: white; border: none; cursor: pointer; }
+        #status { padding: 10px; margin: 10px 0; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>Form Test</h1>
+    <form id="testForm">
+        <input type="text" name="first_name" placeholder="First Name" required>
+        <input type="email" name="email" placeholder="Email" required>
+        <button type="submit">Submit</button>
+    </form>
+    <div id="status"></div>
+
+    <script>
+        document.getElementById('testForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const status = document.getElementById('status');
+            const form = e.target;
+            
+            status.textContent = 'Submitting...';
+            status.className = '';
+
+            const data = {
+                first_name: form.first_name.value,
+                email: form.email.value
+            };
+
+            try {
+                const response = await fetch('/api/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    status.textContent = 'Success! Contact ID: ' + (result.contactId || 'created');
+                    status.className = 'success';
+                    form.reset();
+                } else {
+                    status.textContent = 'Error: ' + (result.error || 'Unknown error');
+                    status.className = 'error';
+                }
+            } catch (err) {
+                status.textContent = 'Network error: ' + err.message;
+                status.className = 'error';
+            }
+        });
+    </script>
+</body>
+</html>
