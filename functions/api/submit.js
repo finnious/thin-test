@@ -18,7 +18,6 @@ export async function onRequestPost(context) {
             );
         }
 
-        // GHL v2 API endpoint with Private Integration
         const ghlResponse = await fetch('https://services.leadconnectorhq.com/contacts/', {
             method: 'POST',
             headers: {
@@ -30,16 +29,18 @@ export async function onRequestPost(context) {
                 locationId: env.GHL_LOCATION_ID,
                 firstName: data.first_name,
                 email: data.email,
-                tags: ['Test-Form'],
-                source: 'Thin Test Site'
+                phone: data.phone || '',
+                tags: data.tags || ['Website-Form'],
+                source: data.source || 'Website',
+                customFields: data.customFields || []
             })
         });
 
         if (!ghlResponse.ok) {
-            const error = await ghlResponse.text();
-            console.error('GHL Error:', error);
+            const errorText = await ghlResponse.text();
+            console.error('GHL Error:', errorText);
             return new Response(
-                JSON.stringify({ success: false, error: 'GHL API error: ' + ghlResponse.status, details: error }),
+                JSON.stringify({ success: false, error: 'Failed to submit' }),
                 { status: 500, headers: corsHeaders }
             );
         }
@@ -54,7 +55,7 @@ export async function onRequestPost(context) {
     } catch (error) {
         console.error('Function error:', error);
         return new Response(
-            JSON.stringify({ success: false, error: error.message }),
+            JSON.stringify({ success: false, error: 'Server error' }),
             { status: 500, headers: corsHeaders }
         );
     }

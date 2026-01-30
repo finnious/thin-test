@@ -3,14 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Form Test Update</title>
+    <title>Form Test | WeAddBots</title>
     <style>
-        body { font-family: sans-serif; max-width: 400px; margin: 50px auto; padding: 20px; }
-        input, button { display: block; width: 100%; margin: 10px 0; padding: 10px; box-sizing: border-box; }
-        button { background: #00ABC7; color: white; border: none; cursor: pointer; }
-        #status { padding: 10px; margin: 10px 0; }
+        body { font-family: system-ui, -apple-system, sans-serif; max-width: 400px; margin: 50px auto; padding: 20px; }
+        h1 { color: #2B3284; }
+        input, button { display: block; width: 100%; margin: 10px 0; padding: 12px; box-sizing: border-box; font-size: 16px; }
+        input { border: 1px solid #ccc; border-radius: 4px; }
+        button { background: #00ABC7; color: white; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; }
+        button:hover { background: #008da6; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        #status { padding: 12px; margin: 10px 0; border-radius: 4px; }
         .success { background: #d4edda; color: #155724; }
         .error { background: #f8d7da; color: #721c24; }
+        .submitting { background: #fff3cd; color: #856404; }
     </style>
 </head>
 <body>
@@ -27,13 +32,17 @@
             e.preventDefault();
             const status = document.getElementById('status');
             const form = e.target;
+            const button = form.querySelector('button');
             
+            button.disabled = true;
             status.textContent = 'Submitting...';
-            status.className = '';
+            status.className = 'submitting';
 
             const data = {
                 first_name: form.first_name.value,
-                email: form.email.value
+                email: form.email.value,
+                tags: ['Test-Form', 'Thin-Site'],
+                source: 'Thin Test Site'
             };
 
             try {
@@ -46,18 +55,36 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    status.textContent = 'Success! Contact ID: ' + (result.contactId || 'created');
+                    status.textContent = 'Success! You\'re on the list.';
                     status.className = 'success';
                     form.reset();
+                    
+                    // Track conversion in Clicky
+                    if (typeof clicky !== 'undefined') {
+                        clicky.goal('form_submit');
+                    }
                 } else {
-                    status.textContent = 'Error: ' + (result.error || 'Unknown error');
+                    status.textContent = 'Error: ' + (result.error || 'Please try again');
                     status.className = 'error';
                 }
             } catch (err) {
-                status.textContent = 'Network error: ' + err.message;
+                status.textContent = 'Network error. Please try again.';
                 status.className = 'error';
             }
+            
+            button.disabled = false;
         });
     </script>
+
+    <!-- Clicky Analytics (deferred) -->
+    <script>
+        window.addEventListener('load', function() {
+            var script = document.createElement('script');
+            script.src = '//static.getclicky.com/101500449.js';
+            script.async = true;
+            document.body.appendChild(script);
+        });
+    </script>
+    <noscript><p><img alt="Clicky" width="1" height="1" src="//in.getclicky.com/101500449ns.gif" /></p></noscript>
 </body>
 </html>
